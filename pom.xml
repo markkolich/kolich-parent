@@ -5,14 +5,16 @@
 
     <groupId>com.kolich</groupId>
     <artifactId>kolich-parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packaging>pom</packaging>
 
     <name>kolich-parent</name>
+
     <description>
-        The parent POM for Mark Kolich's applications: the versions of the libraries they share, and
+        The parent POM for my Java applications: the versions of the libraries they share, and
         the Checkstyle and PMD configuration they're checked with.
     </description>
+
     <url>https://github.com/markkolich/kolich-parent</url>
 
     <licenses>
@@ -39,13 +41,26 @@
         <project.java-release.version>21</project.java-release.version>
 
         <!--
+            The build environment maven-enforcer-plugin requires: the JDK that runs the build
+            (javac, Checkstyle, PMD and the unit tests) and the Maven that drives it. These are the
+            versions needed to *build* an application, not the one it is released for; that is
+            project.java-release.version above.
+        -->
+        <project.java-build.version>[21,)</project.java-build.version>
+        <project.maven.version>3.6.3</project.maven.version>
+
+        <!--
             The kolich-build-config the plugins below load their configuration from. Keep in step with
             this POM's <version>: a property's value is resolved in the inheriting application, where
             ${project.version} is the application's own version.
         -->
-        <kolich-build-config.version>1.0.0</kolich-build-config.version>
+        <kolich-build-config.version>1.1.0</kolich-build-config.version>
 
-        <!-- Plugins (configured in pluginManagement below) -->
+        <!--
+            Every plugin below is version-managed in pluginManagement, so an application declares
+            it with a groupId and artifactId only. Each application keeps its own <configuration>
+            and <executions>; only the version is shared.
+        -->
 
         <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
         <maven-pmd-plugin.version>3.28.0</maven-pmd-plugin.version>
@@ -53,18 +68,31 @@
         <checkstyle.version>14.3.0</checkstyle.version>
         <maven-versions-plugin.version>2.22.0</maven-versions-plugin.version>
         <maven-duplicate-finder-plugin.version>2.0.1</maven-duplicate-finder-plugin.version>
-
-        <!-- Plugins used to build this project only -->
+        <maven-enforcer-plugin.version>3.6.3</maven-enforcer-plugin.version>
+        <maven-enforcer-plugin.extra-enforcer-rules.version>1.12.1</maven-enforcer-plugin.extra-enforcer-rules.version>
 
         <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
         <maven-antrun-plugin.version>3.2.0</maven-antrun-plugin.version>
+        <maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>3.6.0</maven-surefire-plugin.version>
+        <maven-resources-plugin.version>3.5.0</maven-resources-plugin.version>
+        <maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
+        <maven-shade-plugin.version>3.6.2</maven-shade-plugin.version>
+        <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
+        <maven-buildnumber-plugin.version>3.3.1</maven-buildnumber-plugin.version>
+        <maven-frontend-plugin.version>2.0.2</maven-frontend-plugin.version>
+
+        <!-- The Node and npm the frontend-maven-plugin installs locally, for applications with a frontend. -->
+        <maven-frontend-node.version>v24.21.0</maven-frontend-node.version>
+        <maven-frontend-npm.version>11.19.0</maven-frontend-npm.version>
 
         <!-- Libraries -->
 
         <slf4j.version>2.0.20</slf4j.version>
-        <logback.version>1.6.5</logback.version>
+        <logback.version>1.6.6</logback.version>
 
         <kolich-build-version.version>1.0.0</kolich-build-version.version>
+        <kolich-security.version>1.0</kolich-security.version>
 
         <curacao.version>7.2.1</curacao.version>
 
@@ -72,7 +100,7 @@
 
         <typesafe-config.version>1.4.9</typesafe-config.version>
 
-        <jackson.version>2.22.3</jackson.version>
+        <jackson.version>2.22.4</jackson.version>
 
         <guava.version>33.7.2-jre</guava.version>
 
@@ -90,13 +118,15 @@
 
         <jbcrypt.version>0.4</jbcrypt.version>
 
+        <jsr305.version>3.0.2</jsr305.version>
+
         <bouncycastle.version>1.86</bouncycastle.version>
 
         <quartz.version>2.5.2</quartz.version>
 
         <async-http-client.version>3.0.14</async-http-client.version>
 
-        <aws-sdk-v2.version>2.55.14</aws-sdk-v2.version>
+        <aws-sdk-v2.version>2.57.5</aws-sdk-v2.version>
 
         <!-- Test libraries -->
 
@@ -157,6 +187,11 @@
                 <version>${slf4j.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jul-to-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>${logback.version}</version>
@@ -175,6 +210,11 @@
                 <groupId>com.kolich</groupId>
                 <artifactId>kolich-build-version</artifactId>
                 <version>${kolich-build-version.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.kolich</groupId>
+                <artifactId>kolich-security</artifactId>
+                <version>${kolich-security.version}</version>
             </dependency>
 
             <!-- ###################### -->
@@ -324,6 +364,22 @@
             </dependency>
 
             <!-- ###################### -->
+            <!-- Annotations            -->
+            <!-- ###################### -->
+
+            <!--
+                Supplies javax.annotation.Nonnull and Nullable. Guava and Curacao both drag this in
+                transitively, so code that imports those annotations compiles without declaring it;
+                declare it anyway (scope provided) rather than relying on another library's
+                dependency staying put.
+            -->
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>${jsr305.version}</version>
+            </dependency>
+
+            <!-- ###################### -->
             <!-- Test                   -->
             <!-- ###################### -->
 
@@ -340,10 +396,11 @@
     <build>
 
         <!--
-            Checkstyle and PMD, configured with the files in kolich-build-config, and the
-            duplicate-finder-maven-plugin. An application turns each on by declaring the plugin
-            (groupId and artifactId only) in its <build><plugins>; all three run in prepare-package
-            and fail the build on any violation. The versions-maven-plugin
+            Checkstyle and PMD, configured with the files in kolich-build-config, plus the
+            duplicate-finder-maven-plugin and the maven-enforcer-plugin. An application turns each
+            on by declaring the plugin (groupId and artifactId only) in its <build><plugins>, and
+            each fails the build on any violation: the enforcer in validate, the other three in
+            prepare-package. The versions-maven-plugin
             (e.g. `mvn versions:display-dependency-updates`) needs no declaration.
         -->
         <pluginManagement>
@@ -492,6 +549,101 @@
                         <rulesUri>classpath:///kolich/versions/rules.xml</rulesUri>
                     </configuration>
                 </plugin>
+                <!--
+                    Version only: each application supplies its own configuration and executions.
+                -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>${maven-clean-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${maven-resources-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${maven-dependency-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${maven-shade-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${maven-source-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>${maven-antrun-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>buildnumber-maven-plugin</artifactId>
+                    <version>${maven-buildnumber-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.eirslett</groupId>
+                    <artifactId>frontend-maven-plugin</artifactId>
+                    <version>${maven-frontend-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${maven-enforcer-plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>extra-enforcer-rules</artifactId>
+                            <version>${maven-enforcer-plugin.extra-enforcer-rules.version}</version>
+                        </dependency>
+                    </dependencies>
+                    <executions>
+                        <execution>
+                            <id>enforce-build-environment</id>
+                            <phase>validate</phase>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <requireMavenVersion>
+                                        <version>${project.maven.version}</version>
+                                    </requireMavenVersion>
+                                    <requireJavaVersion>
+                                        <version>${project.java-build.version}</version>
+                                    </requireJavaVersion>
+                                    <!--
+                                        No dependency may carry bytecode newer than the release this
+                                        application targets, which would fail at runtime rather than
+                                        at build time. Test dependencies are exempt: they never ship.
+                                    -->
+                                    <enforceBytecodeVersion>
+                                        <maxJdkVersion>${project.java-release.version}</maxJdkVersion>
+                                        <ignoredScopes>
+                                            <ignoredScope>test</ignoredScope>
+                                        </ignoredScopes>
+                                    </enforceBytecodeVersion>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -499,7 +651,6 @@
         <plugins>
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>${maven-clean-plugin.version}</version>
                 <inherited>false</inherited>
                 <configuration>
                     <filesets>
@@ -518,7 +669,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>${maven-antrun-plugin.version}</version>
                 <inherited>false</inherited>
                 <executions>
                     <execution>
