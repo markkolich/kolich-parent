@@ -1,0 +1,549 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.kolich</groupId>
+    <artifactId>kolich-parent</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <name>kolich-parent</name>
+    <description>
+        The parent POM for Mark Kolich's applications: the versions of the libraries they share, and
+        the Checkstyle and PMD configuration they're checked with.
+    </description>
+    <url>https://github.com/markkolich/kolich-parent</url>
+
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>markkolich</id>
+            <name>Mark Kolich</name>
+            <email>social@kolich.com</email>
+        </developer>
+    </developers>
+
+    <modules>
+        <module>kolich-build-config</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- The Java release an application targets; PMD analyzes its source as this version. -->
+        <project.java-release.version>21</project.java-release.version>
+
+        <!--
+            The kolich-build-config the plugins below load their configuration from. Keep in step with
+            this POM's <version>: a property's value is resolved in the inheriting application, where
+            ${project.version} is the application's own version.
+        -->
+        <kolich-build-config.version>1.0.0</kolich-build-config.version>
+
+        <!-- Plugins (configured in pluginManagement below) -->
+
+        <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+        <maven-pmd-plugin.version>3.28.0</maven-pmd-plugin.version>
+        <maven-pmd-plugin.pmd.version>7.28.0</maven-pmd-plugin.pmd.version>
+        <checkstyle.version>14.3.0</checkstyle.version>
+        <maven-versions-plugin.version>2.22.0</maven-versions-plugin.version>
+        <maven-duplicate-finder-plugin.version>2.0.1</maven-duplicate-finder-plugin.version>
+
+        <!-- Plugins used to build this project only -->
+
+        <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
+        <maven-antrun-plugin.version>3.2.0</maven-antrun-plugin.version>
+
+        <!-- Libraries -->
+
+        <slf4j.version>2.0.20</slf4j.version>
+        <logback.version>1.6.5</logback.version>
+
+        <kolich-build-version.version>1.0.0</kolich-build-version.version>
+
+        <curacao.version>7.2.1</curacao.version>
+
+        <jetty.version>11.0.26</jetty.version>
+
+        <typesafe-config.version>1.4.9</typesafe-config.version>
+
+        <jackson.version>2.22.3</jackson.version>
+
+        <guava.version>33.7.2-jre</guava.version>
+
+        <commons-lang3.version>3.21.0</commons-lang3.version>
+        <commons-text.version>1.15.0</commons-text.version>
+        <commons-io.version>2.22.0</commons-io.version>
+        <commons-collections4.version>4.6.0</commons-collections4.version>
+
+        <freemarker.version>2.3.35</freemarker.version>
+
+        <htmlcompressor.version>1.5.2</htmlcompressor.version>
+        <yuicompressor.version>2.4.8</yuicompressor.version>
+
+        <picocli.version>4.7.7</picocli.version>
+
+        <jbcrypt.version>0.4</jbcrypt.version>
+
+        <bouncycastle.version>1.86</bouncycastle.version>
+
+        <quartz.version>2.5.2</quartz.version>
+
+        <async-http-client.version>3.0.14</async-http-client.version>
+
+        <aws-sdk-v2.version>2.55.14</aws-sdk-v2.version>
+
+        <!-- Test libraries -->
+
+        <junit.jupiter.version>6.1.3</junit.jupiter.version>
+        <mockito-core.version>5.24.0</mockito-core.version>
+    </properties>
+
+    <!--
+        The versions of the libraries more than one application uses. An application declares these
+        without a <version>; libraries only one application uses stay versioned in that application.
+    -->
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- ###################### -->
+            <!-- BOMs                   -->
+            <!-- ###################### -->
+
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws-sdk-v2.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- ###################### -->
+            <!-- Logging                -->
+            <!-- ###################### -->
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>log4j-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+
+            <!-- ###################### -->
+            <!-- Kolich                 -->
+            <!-- ###################### -->
+
+            <dependency>
+                <groupId>com.kolich</groupId>
+                <artifactId>kolich-build-version</artifactId>
+                <version>${kolich-build-version.version}</version>
+            </dependency>
+
+            <!-- ###################### -->
+            <!-- Curacao                -->
+            <!-- ###################### -->
+
+            <dependency>
+                <groupId>curacao</groupId>
+                <artifactId>curacao</artifactId>
+                <version>${curacao.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>curacao</groupId>
+                <artifactId>curacao-servlet-jakarta</artifactId>
+                <version>${curacao.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>curacao</groupId>
+                <artifactId>curacao-jackson</artifactId>
+                <version>${curacao.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>curacao</groupId>
+                <artifactId>curacao-freemarker</artifactId>
+                <version>${curacao.version}</version>
+            </dependency>
+
+            <!-- ###################### -->
+            <!-- Jetty                  -->
+            <!-- ###################### -->
+
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-server</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-servlet</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-servlets</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-webapp</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+
+            <!-- ###################### -->
+            <!-- Templates              -->
+            <!-- ###################### -->
+
+            <dependency>
+                <groupId>org.freemarker</groupId>
+                <artifactId>freemarker</artifactId>
+                <version>${freemarker.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.googlecode.htmlcompressor</groupId>
+                <artifactId>htmlcompressor</artifactId>
+                <version>${htmlcompressor.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.yahoo.platform.yui</groupId>
+                <artifactId>yuicompressor</artifactId>
+                <version>${yuicompressor.version}</version>
+            </dependency>
+
+            <!-- ###################### -->
+            <!-- Utilities              -->
+            <!-- ###################### -->
+
+            <dependency>
+                <groupId>com.typesafe</groupId>
+                <artifactId>config</artifactId>
+                <version>${typesafe-config.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>${commons-text.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons-collections4.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>info.picocli</groupId>
+                <artifactId>picocli</artifactId>
+                <version>${picocli.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.quartz-scheduler</groupId>
+                <artifactId>quartz</artifactId>
+                <version>${quartz.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.asynchttpclient</groupId>
+                <artifactId>async-http-client</artifactId>
+                <version>${async-http-client.version}</version>
+            </dependency>
+
+            <!-- ###################### -->
+            <!-- Security               -->
+            <!-- ###################### -->
+
+            <dependency>
+                <groupId>org.mindrot</groupId>
+                <artifactId>jbcrypt</artifactId>
+                <version>${jbcrypt.version}</version>
+            </dependency>
+            <!-- Bouncy Castle's artifacts must all be the same version. -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>${bouncycastle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk18on</artifactId>
+                <version>${bouncycastle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcutil-jdk18on</artifactId>
+                <version>${bouncycastle.version}</version>
+            </dependency>
+
+            <!-- ###################### -->
+            <!-- Test                   -->
+            <!-- ###################### -->
+
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito-core.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+
+        <!--
+            Checkstyle and PMD, configured with the files in kolich-build-config, and the
+            duplicate-finder-maven-plugin. An application turns each on by declaring the plugin
+            (groupId and artifactId only) in its <build><plugins>; all three run in prepare-package
+            and fail the build on any violation. The versions-maven-plugin
+            (e.g. `mvn versions:display-dependency-updates`) needs no declaration.
+        -->
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${maven-checkstyle-plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>${checkstyle.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.kolich</groupId>
+                            <artifactId>kolich-build-config</artifactId>
+                            <version>${kolich-build-config.version}</version>
+                        </dependency>
+                    </dependencies>
+                    <executions>
+                        <execution>
+                            <id>verify-style</id>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <!-- Loaded from kolich-build-config, on the plugin's classpath. -->
+                        <configLocation>kolich/checkstyle/config.xml</configLocation>
+                        <suppressionsLocation>kolich/checkstyle/suppressions.xml</suppressionsLocation>
+                        <headerLocation>kolich/checkstyle/LICENSE.txt</headerLocation>
+                        <violationSeverity>warning</violationSeverity>
+                        <failOnViolation>true</failOnViolation>
+                        <failsOnError>true</failsOnError>
+                        <!-- Validate source files in src/test/java too -->
+                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-pmd-plugin</artifactId>
+                    <version>${maven-pmd-plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>net.sourceforge.pmd</groupId>
+                            <artifactId>pmd-core</artifactId>
+                            <version>${maven-pmd-plugin.pmd.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>net.sourceforge.pmd</groupId>
+                            <artifactId>pmd-java</artifactId>
+                            <version>${maven-pmd-plugin.pmd.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.kolich</groupId>
+                            <artifactId>kolich-build-config</artifactId>
+                            <version>${kolich-build-config.version}</version>
+                        </dependency>
+                    </dependencies>
+                    <executions>
+                        <execution>
+                            <id>pmd-check</id>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <printFailingErrors>true</printFailingErrors>
+                        <includeTests>true</includeTests>
+                        <failOnViolation>true</failOnViolation>
+                        <linkXRef>false</linkXRef>
+                        <targetJdk>${project.java-release.version}</targetJdk>
+                        <rulesets>
+                            <!-- Loaded from kolich-build-config, on the plugin's classpath. -->
+                            <ruleset>kolich/pmd/ruleset.xml</ruleset>
+                        </rulesets>
+                    </configuration>
+                </plugin>
+                <!--
+                    Fails the build when two dependencies ship the same class or resource, so which
+                    one wins isn't left to classpath order (or to the shade plugin). An application
+                    adding its own patterns to these lists uses combine.children="append" on the
+                    list, or it replaces them.
+                -->
+                <plugin>
+                    <groupId>org.basepom.maven</groupId>
+                    <artifactId>duplicate-finder-maven-plugin</artifactId>
+                    <version>${maven-duplicate-finder-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>duplicate-check</id>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <failBuildInCaseOfDifferentContentConflict>true</failBuildInCaseOfDifferentContentConflict>
+                        <failBuildInCaseOfEqualContentConflict>true</failBuildInCaseOfEqualContentConflict>
+                        <failBuildInCaseOfConflict>true</failBuildInCaseOfConflict>
+                        <ignoredResourcePatterns>
+                            <!-- Jetty loves their about.html pages -->
+                            <ignoredResourcePattern>.*about\.html$</ignoredResourcePattern>
+                            <ignoredResourcePattern>javax/servlet/resources/.*</ignoredResourcePattern>
+                            <ignoredResourcePattern>javax/servlet/catalog\.xml</ignoredResourcePattern>
+                            <ignoredResourcePattern>COPYING</ignoredResourcePattern>
+                        </ignoredResourcePatterns>
+                        <ignoredClassPatterns>
+                            <!--
+                                Found duplicate and different classes in
+                                [com.googlecode.htmlcompressor:htmlcompressor:1.5.2,
+                                com.yahoo.platform.yui:yuicompressor:2.4.8]
+                            -->
+                            <ignoredClassPattern>jargs\.gnu\.CmdLineParser</ignoredClassPattern>
+                            <!-- Jigsaw project (Java 9) and later module-info classes. -->
+                            <ignoredClassPattern>.*\.module-info$</ignoredClassPattern>
+                        </ignoredClassPatterns>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>${maven-versions-plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.kolich</groupId>
+                            <artifactId>kolich-build-config</artifactId>
+                            <version>${kolich-build-config.version}</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <ignoredVersions>.*-M.*,.*-alpha.*</ignoredVersions>
+                        <allowSnapshots>false</allowSnapshots>
+                        <!--
+                            Report an imported BOM (jackson-bom, the AWS SDK's bom) as one dependency,
+                            rather than every artifact it manages: the AWS SDK's alone is hundreds.
+                        -->
+                        <processDependencyManagementTransitive>false</processDependencyManagementTransitive>
+                        <!-- Loaded from kolich-build-config, on the plugin's classpath. -->
+                        <rulesUri>classpath:///kolich/versions/rules.xml</rulesUri>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <!-- Building this project itself; not inherited by applications. -->
+        <plugins>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>${maven-clean-plugin.version}</version>
+                <inherited>false</inherited>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>dist</directory>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <!--
+                Lays out dist/kolich-parent/${project.version}: this POM with its .md5/.sha1 checksum
+                sidecar files. kolich-build-config lays out its own next to it. Publish by copying both
+                into the markkolich.github.io repo under repo/com/kolich/.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>${maven-antrun-plugin.version}</version>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>dist-artifacts</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <property name="dist.dir" value="dist/${project.artifactId}/${project.version}" />
+                                <copy file="pom.xml" tofile="${dist.dir}/${project.artifactId}-${project.version}.pom" />
+                                <checksum algorithm="MD5" fileext=".md5">
+                                    <fileset dir="${dist.dir}" includes="*.pom" />
+                                </checksum>
+                                <checksum algorithm="SHA-1" fileext=".sha1">
+                                    <fileset dir="${dist.dir}" includes="*.pom" />
+                                </checksum>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+    </build>
+
+</project>

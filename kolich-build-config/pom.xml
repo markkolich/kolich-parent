@@ -1,0 +1,53 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.kolich</groupId>
+        <artifactId>kolich-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>kolich-build-config</artifactId>
+    <packaging>jar</packaging>
+
+    <name>kolich-build-config</name>
+    <description>
+        The Checkstyle and PMD configuration kolich-parent runs those plugins with, on their classpath.
+    </description>
+
+    <build>
+        <plugins>
+            <!-- Lays out dist/kolich-build-config/${project.version} next to kolich-parent's. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>${maven-antrun-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>dist-artifacts</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <property name="dist.dir" value="../dist/${project.artifactId}/${project.version}" />
+                                <copy file="${project.build.directory}/${project.build.finalName}.jar" todir="${dist.dir}" />
+                                <copy file="pom.xml" tofile="${dist.dir}/${project.build.finalName}.pom" />
+                                <checksum algorithm="MD5" fileext=".md5">
+                                    <fileset dir="${dist.dir}" includes="*.jar,*.pom" />
+                                </checksum>
+                                <checksum algorithm="SHA-1" fileext=".sha1">
+                                    <fileset dir="${dist.dir}" includes="*.jar,*.pom" />
+                                </checksum>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
