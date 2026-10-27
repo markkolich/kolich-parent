@@ -5,7 +5,7 @@
 
     <groupId>com.kolich</groupId>
     <artifactId>kolich-parent</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <packaging>pom</packaging>
 
     <name>kolich-parent</name>
@@ -54,7 +54,7 @@
             this POM's <version>: a property's value is resolved in the inheriting application, where
             ${project.version} is the application's own version.
         -->
-        <kolich-build-config.version>1.1.0</kolich-build-config.version>
+        <kolich-build-config.version>1.2.0</kolich-build-config.version>
 
         <!--
             Every plugin below is version-managed in pluginManagement, so an application declares
@@ -572,10 +572,36 @@
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>${maven-resources-plugin.version}</version>
                 </plugin>
+                <!--
+                    Copies the built artifact into dist/ so the runnable JAR lands somewhere
+                    predictable. A library that publishes to the Maven repository instead wants the
+                    POM alongside the JAR in a versioned directory, so it overrides this execution's
+                    <configuration> (see kolich-security).
+                -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>${maven-dependency-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>copy-artifact</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>copy</goal>
+                            </goals>
+                            <configuration>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>${project.groupId}</groupId>
+                                        <artifactId>${project.artifactId}</artifactId>
+                                        <version>${project.version}</version>
+                                        <type>${project.packaging}</type>
+                                    </artifactItem>
+                                </artifactItems>
+                                <outputDirectory>dist</outputDirectory>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -592,10 +618,33 @@
                     <artifactId>maven-antrun-plugin</artifactId>
                     <version>${maven-antrun-plugin.version}</version>
                 </plugin>
+                <!--
+                    Stamps the short Git revision and a build timestamp into the properties that
+                    kolich-build-version reads at runtime. Nothing here is application specific.
+                -->
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>buildnumber-maven-plugin</artifactId>
                     <version>${maven-buildnumber-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>create-buildnumber</id>
+                            <phase>initialize</phase>
+                            <goals>
+                                <goal>create</goal>
+                            </goals>
+                            <configuration>
+                                <doCheck>false</doCheck>
+                                <doUpdate>false</doUpdate>
+                                <!-- 7-characters to match Git's default "abbreviated commit hash" length. -->
+                                <shortRevisionLength>7</shortRevisionLength>
+                                <!-- An ISO-8601 compliant timestamp string (using SimpleDateFormat). -->
+                                <timestampFormat>yyyy-MM-dd'T'HH:mm:ssXXX</timestampFormat>
+                                <!-- Don't fail the build before the first commit exists. -->
+                                <revisionOnScmFailure>unknown</revisionOnScmFailure>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>com.github.eirslett</groupId>
