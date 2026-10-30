@@ -54,10 +54,10 @@ https://google.github.io/styleguide/javaguide.html
         Line length restrictions do not apply to:
            - package statements
            - import statements
-           - lengthy paths used in @RequestMapping annotations
+           - lengthy paths used in @RequestMapping or @Route annotations
            - URIs that may appear in string constants or Javadocs
         -->
-        <property name="ignorePattern" value="^package.*|^import.*|^\s+(@RequestMapping\()?value = .*|\a href|href|http://|https://|ftp://"/>
+        <property name="ignorePattern" value="^package.*|^import.*|^\s+(@(RequestMapping|Route)\()?value = .*|^\s+@(RequestMapping|Route)\(&quot;.*|\a href|href|http://|https://|ftp://"/>
     </module>
 
     <module name="TreeWalker">
